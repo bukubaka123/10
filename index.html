@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Từ trường – Vật lí 12 · Phygital Lab</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="hs">
+<main>
+<header>
+<div><h1>🧲 Từ trường – Vật lí 12</h1><p class="sub">Bộ thí nghiệm kết nối không dây theo hướng Phygital Learning</p></div>
+<span class="pill" id="pill"><i class="dot"></i><span id="stt">Chưa kết nối</span></span>
+</header>
+
+<section class="c">
+<h2>Kết nối thiết bị ESP32</h2>
+<div class="r">
+<select id="mode" aria-label="Chế độ kết nối"><option value="demo">Mô phỏng (Demo)</option><option value="ws">Wi-Fi (WebSocket)</option><option value="ser">USB (Web Serial)</option></select>
+<input id="ip" placeholder="192.168.4.1:81" aria-label="Địa chỉ ESP32">
+<button class="p" id="go">Kết nối</button>
+</div>
+<p class="sub" id="hint" style="margin-top:8px"></p>
+<p class="sub" style="margin-top:4px">Định dạng dữ liệu: mỗi tin nhắn hoặc dòng một JSON <code>{"Bx":1.2,"By":40.5,"Bz":-0.3,"F":2.1}</code> (B tính bằng mT, F tính bằng mN; cảm biến một trục gửi <code>{"B":40.5,"F":2.1}</code>) hoặc CSV <code>Bx,By,Bz,F</code>.</p>
+</section>
+
+<section class="g g6">
+<div class="c k"><small>Cảm ứng từ B</small><b id="vB" style="color:var(--b)">–</b><i>mT</i></div>
+<div class="c k"><small>Bx</small><b id="vx">–</b><i>mT</i></div>
+<div class="c k"><small>By</small><b id="vy">–</b><i>mT</i></div>
+<div class="c k"><small>Bz</small><b id="vz">–</b><i>mT</i></div>
+<div class="c k"><small>Lực từ F (đo)</small><b id="vF" style="color:var(--f)">–</b><i>mN</i></div>
+<div class="c k"><small>F lí thuyết</small><b id="vL">–</b><i>mN</i></div>
+</section>
+
+<section class="c">
+<h2>Mô phỏng 3D thời gian thực</h2>
+<canvas id="c3" role="img" aria-label="Mô phỏng 3D: đoạn dây mang dòng điện, đường sức từ B và lực từ F"></canvas>
+<div class="r" style="margin-top:10px">
+<label>Chế độ <select id="role"><option value="hs">Học sinh (khám phá)</option><option value="gv">Giáo viên (xem đáp án)</option></select></label>
+<button class="p" id="on">⚡ Bật dòng điện</button>
+<button id="flip">Đảo cực nam châm (Demo)</button>
+</div>
+<p class="sub hsonly" style="margin-top:8px">Hình vẽ: các đường nét đứt là đường sức từ (có vectơ B), nét đậm là đoạn dây, mũi tên trên dây chỉ chiều dòng điện I. Hãy bật dòng điện và quan sát đoạn dây chuyển động về phía nào. Đổi chiều dòng điện (ô “Dòng điện theo”) và đổi cực nam châm, ghi lại từng lần thử, rồi tự rút ra quy tắc xác định chiều lực từ và bấm “Kiểm chứng kết luận”. Muốn tìm độ lớn của lực, hãy thay đổi I, l, α và quan sát số F ở các ô và đồ thị.</p>
+<div class="r hsonly" style="margin-top:8px"><label>Dây chuyển động về phía <select id="obs"><option>+x</option><option>-x</option><option>+y</option><option>-y</option><option>+z</option><option>-z</option><option value="0">không chuyển động</option></select></label><button id="rec">Ghi lần thử</button><button id="rev">Kiểm chứng kết luận</button></div>
+<table class="tb" id="log" style="margin-top:8px"></table>
+<p class="sub gv" style="margin-top:8px"><span style="color:var(--b)">■</span> Đường sức từ và vectơ B theo số đọc cảm biến (nét đứt chạy theo chiều B, dày hơn khi B mạnh) · <b>▬</b> đoạn dây, mũi tên chỉ chiều dòng điện I · <span style="color:var(--f)">■</span> lực từ F = I·l × B, dài theo F đo. Kéo để xoay, nhấp đúp để đặt lại góc nhìn.</p>
+</section>
+
+<section class="g g2">
+<div class="c"><h2><span style="color:var(--b)">●</span> Cảm ứng từ B theo thời gian (mT)</h2><canvas id="cB" role="img" aria-label="Đồ thị B theo thời gian"></canvas></div>
+<div class="c"><h2><span style="color:var(--f)">●</span> Lực từ F theo thời gian (mN): nét liền là đo, nét đứt là lí thuyết</h2><canvas id="cF" role="img" aria-label="Đồ thị F theo thời gian"></canvas></div>
+</section>
+
+<section class="g g2">
+<div class="c">
+<h2>Lực từ lên đoạn dây: F = B·I·l·sinα</h2>
+<div class="r">
+<label>I <input id="I" type="number" value="1" step="0.1" min="0"> A</label>
+<label>l <input id="l" type="number" value="5" step="0.5" min="0"> cm</label>
+<label>Dòng điện theo <select id="dir"><option value="1,0,0">+x</option><option value="-1,0,0">−x</option><option value="0,1,0">+y</option><option value="0,-1,0">−y</option><option value="0,0,1">+z</option><option value="0,0,-1">−z</option></select></label>
+</div>
+<div class="r" style="margin-top:10px"><label>Góc α <input id="al" type="range" min="0" max="180" step="1" value="90" style="width:150px;padding:0;border:0;background:none;vertical-align:middle"> <b id="alv">90</b>°</label><span class="sub">Kéo để xoay chiều dòng điện quanh B: F lớn nhất ở 90°, bằng 0 ở 0° và 180°.</span></div>
+<dl class="st" id="ex" style="margin-top:10px"></dl>
+<p class="sub gv" style="margin-top:8px">Trục x, y, z theo cảm biến từ trường (hệ tọa độ thuận). Quy tắc bàn tay trái tương đương F = I·l × B: đường sức từ xuyên vào lòng bàn tay, chiều từ cổ tay đến ngón giữa là chiều dòng điện, ngón cái choãi ra chỉ chiều lực từ.</p>
+</div>
+<div class="c">
+<h2>Hiệu chuẩn</h2>
+<div class="r">
+<label>Hệ số B <input id="kB" type="number" value="1" step="0.01"></label>
+<label>Hệ số F <input id="kF" type="number" value="1" step="0.01"></label>
+<button id="tare">Về 0 (B, F)</button>
+</div>
+<p class="sub" style="margin-top:6px">“Về 0” lấy số đọc hiện tại làm gốc để loại từ trường nền và độ trôi. Hệ số nhân dùng để khớp với thiết bị chuẩn.</p>
+<h2 style="margin-top:14px">Sai số (50 mẫu gần nhất)</h2>
+<dl class="st" id="sd"></dl>
+</div>
+</section>
+
+<section class="c" id="ex2">
+<h2>Thí nghiệm 2: Đo cảm ứng từ B bằng cân dòng điện</h2>
+<details><summary>Phương án thiết kế (học sinh thảo luận trước khi làm)</summary>
+<p class="sub"><b>Mục tiêu:</b> đo B của nam châm từ lực F tác dụng lên đoạn dây dài l mang dòng điện I, đặt vuông góc với đường sức từ.<br>
+<b>Dụng cụ:</b> nam châm chữ U (hoặc hai nam châm), đoạn dây hoặc khung dây, cân điện tử (hoặc cảm biến lực), nguồn điện một chiều, ampe kế, biến trở, thước.<br>
+<b>Cách làm:</b> đặt nam châm lên cân và chỉnh cân về 0 khi chưa có dòng điện (nút “Về 0”). Cho dòng điện I chạy qua dây, đọc số chỉ cân thay đổi Δm. Lực từ có độ lớn F = Δm·g. Tăng dần I và ghi vào bảng.<br>
+<b>Xử lí:</b> B = F/(I·l), lấy trung bình; vẽ đồ thị F theo I, là đường thẳng qua gốc có hệ số góc B·l.<br>
+<b>Thảo luận:</b> vì sao chọn phương án này? Vì sao phải đặt dây vuông góc với đường sức từ? Làm thế nào để giảm sai số (tăng I, tăng l, đo nhiều lần)?</p></details>
+<div class="r" style="margin-top:8px">
+<label>Δm từ cân <input id="dm" type="number" step="0.01" placeholder="trống = dùng cảm biến"> g</label>
+<button class="p" id="add">Ghi số liệu (I, F)</button><button id="del">Xóa bảng</button></div>
+<p class="sub" style="margin-top:6px">Dùng ô I và l ở thẻ “Lực từ lên đoạn dây”. Để trống Δm thì trang lấy F từ cảm biến lực (trung bình 0,5 giây). Chế độ Demo: bấm “Bật dòng điện” ở khung 3D, đổi I rồi ghi từng lần.</p>
+<table class="tb" id="t2" style="margin-top:8px"></table>
+<dl class="st" id="s2" style="margin-top:8px"></dl>
+<canvas id="cI" role="img" aria-label="Đồ thị F theo I"></canvas>
+</section>
+
+<section class="c">
+<div class="r"><button id="clr">Xóa dữ liệu</button><button id="exp">Xuất CSV</button><span class="sub" id="cnt">0 mẫu</span></div>
+<p class="sub" id="hp" hidden style="margin-top:8px">Sao chép nội dung bên dưới (Ctrl+C) rồi dán vào Excel hoặc Google Sheets.</p>
+<textarea id="ta" hidden readonly rows="6" style="width:100%;margin-top:6px" aria-label="Dữ liệu CSV"></textarea>
+</section>
+</main>
+
+<script src="js/core.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/connection.js"></script>
+<script src="js/controls.js"></script>
+<script src="js/scene3d.js"></script>
+<script src="js/lesson.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
